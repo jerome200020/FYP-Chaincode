@@ -1,0 +1,6 @@
+{
+    "index":{"fields":["docType","studentID"]},
+    "ddoc":"indexOwnerDoc",
+    "name":"indexCertByStudentID",
+    "type":"json"
+}
