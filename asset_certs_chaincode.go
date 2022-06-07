@@ -9,8 +9,6 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-const index = "uniCert~studentID"
-
 type Chaincode struct {
 	contractapi.Contract
 }
