@@ -18,10 +18,10 @@ type Chaincode struct {
 //aCert stands for academic certificates
 type AcademicCert struct {
 	DocType     string   `jason:"docType"`
-	aCertID     string   `jason:"aCertID"`
-	studentID   string   `jason:"studentID"`
-	studentName string   `jason:"studentName"`
-	transcript  []string `jason:"transcript"`
+	ACertID     string   `jason:"aCertID"`
+	StudentID   string   `jason:"studentID"`
+	StudentName string   `jason:"studentName"`
+	Transcript  []string `jason:"transcript"`
 }
 
 // issueCert initializes a new academic certificate on the blockchain
@@ -36,10 +36,10 @@ func (t *Chaincode) IssueAcaCert(ctx contractapi.TransactionContextInterface, aC
 
 	aCert := &AcademicCert{
 		DocType:     "aCert",
-		aCertID:     aCertID,
-		studentID:   studentID,
-		studentName: studentName,
-		transcript:  transcript,
+		ACertID:     aCertID,
+		StudentID:   studentID,
+		StudentName: studentName,
+		Transcript:  transcript,
 	}
 	aCertBytes, err := json.Marshal(aCert)
 	if err != nil {
@@ -120,16 +120,12 @@ func (t *Chaincode) AssetExists(ctx contractapi.TransactionContextInterface, cer
 
 func (t *Chaincode) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	aCerts := []AcademicCert{
-		{DocType: "aCert", aCertID: "aCert1", studentID: "SWE1904873", studentName: "Loo Yong Jun",
-			transcript: []string{"Introduction to software engineering, GPA : 4.0",
-				"Computing architecture, GPA : 3.3"}},
-		{DocType: "aCert", aCertID: "aCert2", studentID: "SWE1909886", studentName: "Loo Ken Wae",
-			transcript: []string{"Introduction to software engineering, GPA : 2.0",
-				"International Business, GPA : 2.0"}},
+		{DocType: "aCert", ACertID: "aCert1", StudentID: "SWE1904873", StudentName: "Loo Yong Jun", Transcript: []string{"Introduction to software engineering, GPA : 4.0", "Computing architecture, GPA : 3.3"}},
+		{DocType: "aCert", ACertID: "aCert2", StudentID: "SWE1909886", StudentName: "Loo Ken Wae", Transcript: []string{"Introduction to software engineering, GPA : 2.0", "International Business, GPA : 2.0"}},
 	}
 
 	for _, cert := range aCerts {
-		err := t.IssueAcaCert(ctx, cert.aCertID, cert.studentID, cert.studentName, cert.transcript)
+		err := t.IssueAcaCert(ctx, cert.ACertID, cert.StudentID, cert.StudentName, cert.Transcript)
 		if err != nil {
 			return err
 		}
