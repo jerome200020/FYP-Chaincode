@@ -22,7 +22,16 @@ type AcademicCert struct {
 	Transcript  []string `jason:"transcript"`
 }
 
-// issueCert initializes a new academic certificate on the blockchain
+//cCert stands for extra-curricular certificates
+type ExtraCurricularCert struct {
+	DocType      string   `jason:"docType"`
+	CCertID      string   `jason:"cCertID"`
+	StudentID    string   `jason:"studentID"`
+	StudentName  string   `jason:"studentName"`
+	Achievements []string `jason:"achievements"`
+}
+
+// issueAcaCert initializes a new academic certificate on the blockchain
 func (t *Chaincode) IssueAcaCert(ctx contractapi.TransactionContextInterface, aCertID, studentID string, studentName string, transcript []string) error {
 	exists, err := t.AssetExists(ctx, aCertID)
 	if err != nil {
@@ -48,6 +57,33 @@ func (t *Chaincode) IssueAcaCert(ctx contractapi.TransactionContextInterface, aC
 	return err
 }
 
+//issueCert initializes a new extracurricular certificate on the blockchain
+func (t *Chaincode) IssueCurrCert(ctx contractapi.TransactionContextInterface, cCertID, studentID string, studentName string, achievements []string) error {
+	exists, err := t.AssetExists(ctx, cCertID)
+	if err != nil {
+		return fmt.Errorf("failed to get extracurricular cert: %v", err)
+
+	}
+	if exists {
+		return fmt.Errorf("extracurricular cert already exists: %s", cCertID)
+	}
+
+	cCert := &ExtraCurricularCert{
+		DocType:      "cCert",
+		CCertID:      cCertID,
+		StudentID:    studentID,
+		StudentName:  studentName,
+		Achievements: achievements,
+	}
+	cCertBytes, err := json.Marshal(cCert)
+	if err != nil {
+		return err
+	}
+
+	err = ctx.GetStub().PutState(cCertID, cCertBytes)
+	return err
+}
+
 // ReadAcaCert retrieves a academic certificate from the ledger
 func (t *Chaincode) ReadAcaCert(ctx contractapi.TransactionContextInterface, aCertID string) (*AcademicCert, error) {
 	aCertBytes, err := ctx.GetStub().GetState(aCertID)
@@ -67,8 +103,27 @@ func (t *Chaincode) ReadAcaCert(ctx contractapi.TransactionContextInterface, aCe
 	return &aCert, nil
 }
 
-// constructQueryResponseFromIterator constructs a slice of assets from the resultsIterator
-func constructQueryResponseFromIterator(resultsIterator shim.StateQueryIteratorInterface) ([]*AcademicCert, error) {
+//ReadCurrCert retrieves a extracurricular certificate from the ledger
+func (t *Chaincode) ReadCurrCert(ctx contractapi.TransactionContextInterface, cCertID string) (*ExtraCurricularCert, error) {
+	cCertBytes, err := ctx.GetStub().GetState(cCertID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get extracurricular cert %s: %v", cCertID, err)
+	}
+	if cCertBytes == nil {
+		return nil, fmt.Errorf("extracurricular cert %s does not exists", cCertID)
+	}
+
+	var cCert ExtraCurricularCert
+	err = json.Unmarshal(cCertBytes, &cCert)
+	if err != nil {
+		return nil, err
+	}
+
+	return &cCert, nil
+}
+
+// constructQueryResponseFromIterator constructs a slice of assets from the resultsIterator that returns an array of academic certs
+func constructQueryResponseFromIterator_AcaCert(resultsIterator shim.StateQueryIteratorInterface) ([]*AcademicCert, error) {
 	var aCerts []*AcademicCert
 	for resultsIterator.HasNext() {
 		queryResult, err := resultsIterator.Next()
@@ -90,20 +145,58 @@ func constructQueryResponseFromIterator(resultsIterator shim.StateQueryIteratorI
 // This is an example of a parameterized query where the query logic is baked into the chaincode,
 // and accepting a single query parameter (studentID).
 func (t *Chaincode) QueryAcaCertByStudentID(ctx contractapi.TransactionContextInterface, studentID string) ([]*AcademicCert, error) {
-	queryString := fmt.Sprintf(`{"selector":{"docType":"aCert","studentID":"%s"}}`, studentID)
-	return getQueryResultForQueryString(ctx, queryString)
+	queryString := fmt.Sprintf(`{"selector":{"DocType":"aCert","StudentID":"%s"}}`, studentID)
+	return getQueryResultForQueryString_AcaCert(ctx, queryString)
 }
 
-// getQueryResultForQueryString executes the passed in query string.
+// getQueryResultForQueryString_AcaCert executes the passed in query string.
 // The result set is built and returned as a byte array containing the JSON results.
-func getQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*AcademicCert, error) {
+func getQueryResultForQueryString_AcaCert(ctx contractapi.TransactionContextInterface, queryString string) ([]*AcademicCert, error) {
 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
 		return nil, err
 	}
 	defer resultsIterator.Close()
 
-	return constructQueryResponseFromIterator(resultsIterator)
+	return constructQueryResponseFromIterator_AcaCert(resultsIterator)
+}
+
+// constructQueryResponseFromIterator_CurrCert constructs a slice of assets from the resultsIterator that returns an array of extracurricular certifications
+func constructQueryResponseFromIterator_CurrCert(resultsIterator shim.StateQueryIteratorInterface) ([]*ExtraCurricularCert, error) {
+	var cCerts []*ExtraCurricularCert
+	for resultsIterator.HasNext() {
+		queryResult, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+		var cCert ExtraCurricularCert
+		err = json.Unmarshal(queryResult.Value, &cCert)
+		if err != nil {
+			return nil, err
+		}
+		cCerts = append(cCerts, &cCert)
+	}
+	return cCerts, nil
+}
+
+// QueryCurrCertByStudentID queries for extracurricular certificates based on the studentID.
+// This is an example of a parameterized query where the query logic is baked into the chaincode,
+// and accepting a single query parameter (studentID).
+func (t *Chaincode) QueryCurrCertByStudentID(ctx contractapi.TransactionContextInterface, studentID string) ([]*ExtraCurricularCert, error) {
+	queryString := fmt.Sprintf(`{"Selector":{"DocType":"cCert","StudentID":"%s"}}`, studentID)
+	return getQueryResultForQueryString_CurrCert(ctx, queryString)
+}
+
+// getQueryResultForQueryString_CurrCert executes the passed in query string.
+// The result set is built and returned as a byte array containing the JSON results.
+func getQueryResultForQueryString_CurrCert(ctx contractapi.TransactionContextInterface, queryString string) ([]*ExtraCurricularCert, error) {
+	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	return constructQueryResponseFromIterator_CurrCert(resultsIterator)
 }
 
 // AssetExists returns true when asset with given ID exists in the ledger.
