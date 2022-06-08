@@ -86,6 +86,14 @@ func constructQueryResponseFromIterator(resultsIterator shim.StateQueryIteratorI
 	return aCerts, nil
 }
 
+// QueryAcaCertByStudentID queries for academic certificates based on the studentID.
+// This is an example of a parameterized query where the query logic is baked into the chaincode,
+// and accepting a single query parameter (studentID).
+func (t *Chaincode) QueryAcaCertByStudentID(ctx contractapi.TransactionContextInterface, studentID string) ([]*AcademicCert, error) {
+	queryString := fmt.Sprintf(`{"selector":{"docType":"aCert","studentID":"%s"}}`, studentID)
+	return getQueryResultForQueryString(ctx, queryString)
+}
+
 // getQueryResultForQueryString executes the passed in query string.
 // The result set is built and returned as a byte array containing the JSON results.
 func getQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*AcademicCert, error) {
@@ -96,14 +104,6 @@ func getQueryResultForQueryString(ctx contractapi.TransactionContextInterface, q
 	defer resultsIterator.Close()
 
 	return constructQueryResponseFromIterator(resultsIterator)
-}
-
-// QueryAssetsByOwner queries for academic certificates based on the studentID.
-// This is an example of a parameterized query where the query logic is baked into the chaincode,
-// and accepting a single query parameter (studentID).
-func (t *Chaincode) QueryAcaCertByStudentID(ctx contractapi.TransactionContextInterface, studentID string) ([]*AcademicCert, error) {
-	queryString := fmt.Sprintf(`{"selector":{"docType":"aCert","studentID":"%s"}}`, studentID)
-	return getQueryResultForQueryString(ctx, queryString)
 }
 
 // AssetExists returns true when asset with given ID exists in the ledger.
