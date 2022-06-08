@@ -183,7 +183,7 @@ func constructQueryResponseFromIterator_CurrCert(resultsIterator shim.StateQuery
 // This is an example of a parameterized query where the query logic is baked into the chaincode,
 // and accepting a single query parameter (studentID).
 func (t *Chaincode) QueryCurrCertByStudentID(ctx contractapi.TransactionContextInterface, studentID string) ([]*ExtraCurricularCert, error) {
-	queryString := fmt.Sprintf(`{"Selector":{"DocType":"cCert","StudentID":"%s"}}`, studentID)
+	queryString := fmt.Sprintf(`{"selector":{"DocType":"cCert","StudentID":"%s"}}`, studentID)
 	return getQueryResultForQueryString_CurrCert(ctx, queryString)
 }
 
@@ -212,11 +212,24 @@ func (t *Chaincode) AssetExists(ctx contractapi.TransactionContextInterface, cer
 func (t *Chaincode) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	aCerts := []AcademicCert{
 		{DocType: "aCert", ACertID: "aCert1", StudentID: "SWE1904873", StudentName: "Loo Yong Jun", Transcript: []string{"Introduction to software engineering, GPA : 4.0", "Computing architecture, GPA : 3.3"}},
-		{DocType: "aCert", ACertID: "aCert2", StudentID: "SWE1909886", StudentName: "Loo Ken Wae", Transcript: []string{"Introduction to software engineering, GPA : 2.0", "International Business, GPA : 2.0"}},
+		{DocType: "aCert", ACertID: "aCert2", StudentID: "SWE1909886", StudentName: "Shane Ho Ken Wae", Transcript: []string{"Introduction to software engineering, GPA : 2.0", "International Business, GPA : 2.0"}},
 	}
 
-	for _, cert := range aCerts {
-		err := t.IssueAcaCert(ctx, cert.ACertID, cert.StudentID, cert.StudentName, cert.Transcript)
+	cCerts := []ExtraCurricularCert{
+		{DocType: "cCert", CCertID: "cCert1", StudentID: "SWE1904873", StudentName: "Loo Yong Jun", Achievements: []string{"Club: Martial Arts Club", "Position: Vice President", "Service: April 2021 - April 2022"}},
+		{DocType: "cCert", CCertID: "cCert2", StudentID: "SWE1904873", StudentName: "Loo Yong Jun", Achievements: []string{"Event: X-Tech Hackathon", "Award: Participation", "Date: 22 September 2020 - 24 September 2022", "Organizer: Tech Club (X-Tech)"}},
+		{DocType: "cCert", CCertID: "cCert3", StudentID: "SWE1909886", StudentName: "Shane Ho Ken Wae", Achievements: []string{"Club: Music Club", "Position: General Affairs", "Service: April 2019 - April 2020"}},
+	}
+
+	for _, acert := range aCerts {
+		err := t.IssueAcaCert(ctx, acert.ACertID, acert.StudentID, acert.StudentName, acert.Transcript)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, ccert := range cCerts {
+		err := t.IssueCurrCert(ctx, ccert.CCertID, ccert.StudentID, ccert.StudentName, ccert.Achievements)
 		if err != nil {
 			return err
 		}
