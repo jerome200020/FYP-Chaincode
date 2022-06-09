@@ -6,14 +6,14 @@ const yaml = require('js-yaml');
 const { Wallets, Gateway } = require('fabric-network');
 
 async function main() {
-    const wallet = await Wallets.newFileSystemWallet('../identity/user/shane/wallet');
+    const wallet = await Wallets.newFileSystemWallet('/identity/user/shane/wallet');
 
     const gateway = new Gateway();
 
     try {
         const userName = 'shane';
 
-        let connectionProfile = yaml.safeLoad(fs.readFileSync('../gateway/connection-org1.yaml', 'utf8'));
+        let connectionProfile = yaml.safeLoad(fs.readFileSync('/gateway/connection-org1.yaml', 'utf8'));
 
         let connectionOptions = {
             identity: userName,

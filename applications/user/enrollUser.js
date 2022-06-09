@@ -8,13 +8,13 @@ const path = require('path');
 
 async function main() {
     try {
-        let connectionProfile = yaml.safeLoad(fs.readFileSync('../gateway/connection-org1.yaml','utf-8'));
+        let connectionProfile = yaml.safeLoad(fs.readFileSync('/gateway/connection-org1.yaml','utf-8'));
 
         const caInfo = connectionProfile.certificateAuthorities['ca.org1.example.com'];
         const caTLSCACerts = caInfo.tlsCACerts.pem;
         const ca = new FabricCAServices(caInfo.url, { trustedRoots: caTLSCACerts, verify: false }, caInfo.caName);
 
-        const walletPath = path.join(process.cwd(), '../identity/user/shane/wallet');
+        const walletPath = path.join(process.cwd(), '/identity/user/shane/wallet');
         const wallet = await Wallets.newFileSystemWallet(walletPath);
         console.log(`Wallet path: ${walletPath}`);
 
@@ -37,7 +37,7 @@ async function main() {
         console.log('Successfully enrolled client user "shane" and imported it into the wallet');
 
     } catch {
-        console.error(`Failed to enroll client shane "balaji": ${error}`);
+        console.error(`Failed to enroll client shane "shane": ${error}`);
         process.exit(1);
     }
 }
