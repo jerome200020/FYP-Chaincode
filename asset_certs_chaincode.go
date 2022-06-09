@@ -15,11 +15,13 @@ type Chaincode struct {
 
 //aCert stands for academic certificates
 type AcademicCert struct {
-	DocType     string   `jason:"docType"`
-	ACertID     string   `jason:"aCertID"`
-	StudentID   string   `jason:"studentID"`
-	StudentName string   `jason:"studentName"`
-	Transcript  []string `jason:"transcript"`
+	DocType        string   `jason:"docType"`
+	ACertID        string   `jason:"aCertID"`
+	StudentID      string   `jason:"studentID"`
+	StudentName    string   `jason:"studentName"`
+	Degree         string   `jason:"degree"`
+	GraduationDate string   `jason:"graduationDate"`
+	Transcript     []string `jason:"transcript"`
 }
 
 //cCert stands for extra-curricular certificates
@@ -32,7 +34,7 @@ type ExtraCurricularCert struct {
 }
 
 // issueAcaCert initializes a new academic certificate on the blockchain
-func (t *Chaincode) IssueAcaCert(ctx contractapi.TransactionContextInterface, aCertID, studentID string, studentName string, transcript []string) error {
+func (t *Chaincode) IssueAcaCert(ctx contractapi.TransactionContextInterface, aCertID, studentID string, studentName string, degree string, gradDate string, transcript []string) error {
 	exists, err := t.AssetExists(ctx, aCertID)
 	if err != nil {
 		return fmt.Errorf("failed to get academic cert: %v", err)
@@ -42,11 +44,13 @@ func (t *Chaincode) IssueAcaCert(ctx contractapi.TransactionContextInterface, aC
 	}
 
 	aCert := &AcademicCert{
-		DocType:     "aCert",
-		ACertID:     aCertID,
-		StudentID:   studentID,
-		StudentName: studentName,
-		Transcript:  transcript,
+		DocType:        "aCert",
+		ACertID:        aCertID,
+		StudentID:      studentID,
+		StudentName:    studentName,
+		Degree:         degree,
+		GraduationDate: gradDate,
+		Transcript:     transcript,
 	}
 	aCertBytes, err := json.Marshal(aCert)
 	if err != nil {
@@ -211,8 +215,8 @@ func (t *Chaincode) AssetExists(ctx contractapi.TransactionContextInterface, cer
 
 func (t *Chaincode) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	aCerts := []AcademicCert{
-		{DocType: "aCert", ACertID: "aCert1", StudentID: "SWE1904873", StudentName: "Loo Yong Jun", Transcript: []string{"Introduction to software engineering, GPA : 4.0", "Computing architecture, GPA : 3.3"}},
-		{DocType: "aCert", ACertID: "aCert2", StudentID: "SWE1909886", StudentName: "Shane Ho Ken Wae", Transcript: []string{"Introduction to software engineering, GPA : 2.0", "International Business, GPA : 2.0"}},
+		{DocType: "aCert", ACertID: "aCert1", StudentID: "SWE1904873", StudentName: "Loo Yong Jun", Degree: "Bachelor of Chemical Engineering with Honours", GraduationDate: "23 April 2020", Transcript: []string{"Introduction to software engineering, GPA : 4.0", "Computing architecture, GPA : 3.3"}},
+		{DocType: "aCert", ACertID: "aCert2", StudentID: "SWE1909886", StudentName: "Shane Ho Ken Wae", Degree: "Bachelor of Science in Mathematics and Applied Mathematics with Honours", GraduationDate: "20 September 2020", Transcript: []string{"Introduction to software engineering, GPA : 2.0", "International Business, GPA : 2.0"}},
 	}
 
 	cCerts := []ExtraCurricularCert{
@@ -222,7 +226,7 @@ func (t *Chaincode) InitLedger(ctx contractapi.TransactionContextInterface) erro
 	}
 
 	for _, acert := range aCerts {
-		err := t.IssueAcaCert(ctx, acert.ACertID, acert.StudentID, acert.StudentName, acert.Transcript)
+		err := t.IssueAcaCert(ctx, acert.ACertID, acert.StudentID, acert.StudentName, acert.Degree, acert.GraduationDate, acert.Transcript)
 		if err != nil {
 			return err
 		}
