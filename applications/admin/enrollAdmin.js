@@ -8,7 +8,7 @@ const path = require('path');
 
 async function main(){
     try {
-        let connectionProfile = yaml.safeLoad(fs.readFileSync('/gateway/connection-org1.yaml','utf-8'));
+        let connectionProfile = yaml.safeLoad(fs.readFileSync('/gateway/connection-org2.yaml','utf-8'));
 
         const caInfo = connectionProfile.certificateAuthorities['ca.org2.example.com'];
         const caTLSCACerts = caInfo.caTLSCACerts.pem;
