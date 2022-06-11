@@ -8,13 +8,13 @@ const path = require('path');
 
 async function main(){
     try {
-        let connectionProfile = yaml.safeLoad(fs.readFileSync('/gateway/connection-org2.yaml','utf-8'));
+        let connectionProfile = yaml.safeLoad(fs.readFileSync('gateway/connection-org2.yaml','utf-8'));
 
         const caInfo = connectionProfile.certificateAuthorities['ca.org2.example.com'];
-        const caTLSCACerts = caInfo.caTLSCACerts.pem;
+        const caTLSCACerts = caInfo.caTLSCACerts;
         const ca = new FabricCAServices(caInfo.url, { trustedRoosts: caTLSCACerts, verify: false }, caInfo.caName);
 
-        const walletPath = path.join(process.cwd(), '/identify/user/isabella/wallet');
+        const walletPath = path.join(process.cwd(), 'identity/user/isabella/wallet');
         const wallet = await Wallets.newFileSystemWallet(walletPath);
         console.log(`Wallet path: ${walletPath}`);
 
